@@ -1,9 +1,7 @@
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import javax.swing.JTextField;
+
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -17,12 +15,113 @@ import javax.swing.JTextField;
  * @author jerso
  */
 public class Estudiantes_1 extends javax.swing.JFrame {
+    
+ private final String TABLA = "estudiantes";
+ private final ConectorBDD CBD = new ConectorBDD();
+ 
+ private String sql;
+ private String id_estudiante, nombre, apellido, fecha_nacimiento, edad;
+ private String id_estado_civil, id_estado, id_documento, direccion;
+   
+ 
+ 
+    private void obtenerDatosGUI(){
+        id_estudiante = jTextField1.getText();
+        nombre = jTextField4.getText();
+        apellido = jTextField3.getText();
+        fecha_nacimiento = jTextField8.getText();
+        edad =jTextField5.getText();
+        id_estado_civil =  jTextField6.getText();
+        id_estado = jTextField7.getText();
+        direccion = jTextField9.getText();
+    }
+
+    private boolean guardar(){
+        boolean estado = false;
+
+        if( CBD.conectar()){
+            sql =  "INSERT INTO " + TABLA + "VALUES (" + 
+             id_estudiante + "," + 
+             "'" + nombre + "'" + "," + 
+             "'" + apellido + "'" + "," + 
+             "'" + fecha_nacimiento + "'" + "," +
+             "'" + edad + "'" + "," + 
+             "'" + id_estado_civil + "'" + "," + 
+             "'" + id_estado + "'" + "," +
+             "'" + direccion + "'" + " );" ;
+
+            if( CBD.ejecutar(sql)){
+                estado = true;
+            }
+            CBD.desconectar();
+        }else {
+            Adicional.advertir(this, "ERROR; Verifique la conexion con la BD", getTitle());
+        }
+        return estado;    
+    }
+
+    private void limpiarGUI(){
+            this.jTextField1.setText("");
+            this.jTextField2.setText("");
+            this.jTextField3.setText("");
+            this.jTextField4.setText("");
+            this.jTextField5.setText("");
+            this.jTextField6.setText("");
+            this.jTextField7.setText("");
+            this.jTextField8.setText("");
+            this.jTextField9.setText("");
+            this.jLabel10.setText("");
+            this.jLabel14.setText("");
+            this.jLabel15.setText("");
+            this.jLabel16.setText("");
+            this.jCheckBox1.setSelected(false);
+            this.jCheckBox2.setSelected(false);
+            this.jCheckBox3.setSelected(false);
+            this.jCheckBox4.setSelected(false);
+            this.jTextField2.grabFocus();
+     }
+
+    
+    private boolean buscar(String id){
+        boolean estado = false;
+        if(CBD.conectar()){
+            sql = "SELECT * FROM " + TABLA + "WHERE estudiantes= " + id + ";";
+            ResultSet regs = CBD.seleccionar(sql);
+            try{
+                if(regs.next()){
+                    jTextField1.setText(String.valueOf( regs.getInt("id_estudiante")));
+                    jTextField4.setText( regs.getString("nombre"));
+                    jTextField3.setText( regs.getString("apellido"));
+                    jTextField8.setText(regs.getString("fecha_nacimiento"));
+                    jTextField5.setText(String.valueOf( regs.getInt("edad")));
+                    jTextField6.setText(String.valueOf( regs.getInt("id_estado_civil")));
+                    jTextField7.setText(String.valueOf( regs.getInt("id_estado")));
+                    jTextField9.setText(regs.getString("direccion"));
+                    estado = true;
+                }
+            }catch(SQLException sqle){
+                System.out.println("ERROR: buscar()");
+                System.err.println(sqle.getMessage());
+            }
+            CBD.desconectar();
+        }else{
+            Adicional.advertir(this, "ERROR: Verifique la conexion con la BD", getTitle());
+        }
+        return estado;
+    }
 
     /**
      * Creates new form Estudiantes
      */
     public Estudiantes_1() {
         initComponents();
+        
+        //try{
+         // Class.forName("com.mysql.cj.jdbc.Driver");
+         // con = DriverManager.getConnection(URL, USUARIO, CLAVE);
+       // } catch (Exception e) {
+         // System.out.println("Error al conectar: " + e.getMessage());
+       // }
 
     }
 
@@ -55,8 +154,8 @@ public class Estudiantes_1 extends javax.swing.JFrame {
         jTextField6 = new javax.swing.JTextField();
         jTextField7 = new javax.swing.JTextField();
         jTextField8 = new javax.swing.JTextField();
-        jButton1 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
+        btnbuscar = new javax.swing.JButton();
+        btnsalir = new javax.swing.JButton();
         jSeparator2 = new javax.swing.JSeparator();
         jLabel12 = new javax.swing.JLabel();
         jLabel13 = new javax.swing.JLabel();
@@ -68,10 +167,10 @@ public class Estudiantes_1 extends javax.swing.JFrame {
         jLabel14 = new javax.swing.JLabel();
         jLabel15 = new javax.swing.JLabel();
         jLabel16 = new javax.swing.JLabel();
-        jButton2 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
-        jButton5 = new javax.swing.JButton();
-        jButton6 = new javax.swing.JButton();
+        btneliminar = new javax.swing.JButton();
+        btnguardar = new javax.swing.JButton();
+        btnmodificar = new javax.swing.JButton();
+        btnlimpiar = new javax.swing.JButton();
         jLabel17 = new javax.swing.JLabel();
         jTextField9 = new javax.swing.JTextField();
 
@@ -181,23 +280,23 @@ public class Estudiantes_1 extends javax.swing.JFrame {
             }
         });
 
-        jButton1.setBackground(new java.awt.Color(153, 255, 204));
-        jButton1.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-        jButton1.setText("BUSCAR");
-        jButton1.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        btnbuscar.setBackground(new java.awt.Color(153, 255, 204));
+        btnbuscar.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        btnbuscar.setText("BUSCAR");
+        btnbuscar.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        btnbuscar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                btnbuscarActionPerformed(evt);
             }
         });
 
-        jButton3.setBackground(new java.awt.Color(0, 0, 0));
-        jButton3.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-        jButton3.setForeground(new java.awt.Color(255, 51, 51));
-        jButton3.setText("SALIR");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
+        btnsalir.setBackground(new java.awt.Color(0, 0, 0));
+        btnsalir.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        btnsalir.setForeground(new java.awt.Color(255, 51, 51));
+        btnsalir.setText("SALIR");
+        btnsalir.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
+                btnsalirActionPerformed(evt);
             }
         });
 
@@ -235,54 +334,50 @@ public class Estudiantes_1 extends javax.swing.JFrame {
         });
 
         jLabel10.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-        jLabel10.setText("E");
 
         jLabel14.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-        jLabel14.setText("E");
 
         jLabel15.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-        jLabel15.setText("E");
 
         jLabel16.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-        jLabel16.setText("E");
 
-        jButton2.setBackground(new java.awt.Color(153, 255, 204));
-        jButton2.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-        jButton2.setText("ELIMINAR");
-        jButton2.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        btneliminar.setBackground(new java.awt.Color(153, 255, 204));
+        btneliminar.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        btneliminar.setText("ELIMINAR");
+        btneliminar.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        btneliminar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                btneliminarActionPerformed(evt);
             }
         });
 
-        jButton4.setBackground(new java.awt.Color(153, 255, 204));
-        jButton4.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-        jButton4.setText("GUARDAR");
-        jButton4.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-        jButton4.addActionListener(new java.awt.event.ActionListener() {
+        btnguardar.setBackground(new java.awt.Color(153, 255, 204));
+        btnguardar.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        btnguardar.setText("GUARDAR");
+        btnguardar.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        btnguardar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton4ActionPerformed(evt);
+                btnguardarActionPerformed(evt);
             }
         });
 
-        jButton5.setBackground(new java.awt.Color(153, 255, 204));
-        jButton5.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-        jButton5.setText("MODIFICAR");
-        jButton5.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-        jButton5.addActionListener(new java.awt.event.ActionListener() {
+        btnmodificar.setBackground(new java.awt.Color(153, 255, 204));
+        btnmodificar.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        btnmodificar.setText("MODIFICAR");
+        btnmodificar.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        btnmodificar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton5ActionPerformed(evt);
+                btnmodificarActionPerformed(evt);
             }
         });
 
-        jButton6.setBackground(new java.awt.Color(153, 255, 204));
-        jButton6.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-        jButton6.setText("LIMPIAR");
-        jButton6.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-        jButton6.addActionListener(new java.awt.event.ActionListener() {
+        btnlimpiar.setBackground(new java.awt.Color(153, 255, 204));
+        btnlimpiar.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        btnlimpiar.setText("LIMPIAR");
+        btnlimpiar.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        btnlimpiar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton6ActionPerformed(evt);
+                btnlimpiarActionPerformed(evt);
             }
         });
 
@@ -324,9 +419,9 @@ public class Estudiantes_1 extends javax.swing.JFrame {
                                     .addComponent(jCheckBox3)
                                     .addComponent(jLabel14, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                .addComponent(jButton5)
+                                .addComponent(btnmodificar)
                                 .addGap(62, 62, 62)
-                                .addComponent(jButton2)))
+                                .addComponent(btneliminar)))
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGap(93, 93, 93)
@@ -335,7 +430,7 @@ public class Estudiantes_1 extends javax.swing.JFrame {
                                     .addComponent(jCheckBox4)))
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGap(35, 35, 35)
-                                .addComponent(jButton6)))))
+                                .addComponent(btnlimpiar)))))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
@@ -356,7 +451,7 @@ public class Estudiantes_1 extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 252, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
-                                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(btnbuscar, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGap(174, 174, 174)
                                 .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -395,7 +490,7 @@ public class Estudiantes_1 extends javax.swing.JFrame {
                         .addContainerGap(122, Short.MAX_VALUE))))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnsalir, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18))
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel1Layout.createSequentialGroup()
@@ -410,7 +505,7 @@ public class Estudiantes_1 extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel1Layout.createSequentialGroup()
                     .addGap(31, 31, 31)
-                    .addComponent(jButton4)
+                    .addComponent(btnguardar)
                     .addContainerGap(508, Short.MAX_VALUE)))
         );
         jPanel1Layout.setVerticalGroup(
@@ -422,7 +517,7 @@ public class Estudiantes_1 extends javax.swing.JFrame {
                     .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(btnbuscar, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel5)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -477,10 +572,10 @@ public class Estudiantes_1 extends javax.swing.JFrame {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jButton6, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(btnmodificar, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btneliminar, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnsalir, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnlimpiar, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(21, 21, 21))))
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel1Layout.createSequentialGroup()
@@ -495,7 +590,7 @@ public class Estudiantes_1 extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                     .addContainerGap(579, Short.MAX_VALUE)
-                    .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnguardar, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGap(21, 21, 21)))
         );
 
@@ -526,12 +621,12 @@ public class Estudiantes_1 extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_jTextField1ActionPerformed
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+    private void btnsalirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnsalirActionPerformed
 //SALIR
         System.exit(0);
         
         // TODO add your handling code here:
-    }//GEN-LAST:event_jButton3ActionPerformed
+    }//GEN-LAST:event_btnsalirActionPerformed
 
     private void jTextField3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField3ActionPerformed
         // TODO add your handling code here:
@@ -557,12 +652,23 @@ public class Estudiantes_1 extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_jTextField8ActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void btnbuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnbuscarActionPerformed
 
+        String id = jTextField2.getText();
+        limpiarGUI();
+        if( buscar(id) ){
+            btnguardar.setEnabled(false);
+            btnmodificar.setEnabled(true);
+            btneliminar.setEnabled(true);
+            jTextField2.setEnabled(false);
+            Adicional.informar(this, "Datos buscados correctamente.", getTitle());
+        }else{
+            Adicional.advertir(this, "No se encontraron Datos.", getTitle());
+        }
         // BUSCAR
-
-       
-    }//GEN-LAST:event_jButton1ActionPerformed
+        
+        
+    }//GEN-LAST:event_btnbuscarActionPerformed
 
     private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
         // TODO add your handling code here:
@@ -576,45 +682,37 @@ public class Estudiantes_1 extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_jCheckBox4ActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    private void btneliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btneliminarActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }//GEN-LAST:event_btneliminarActionPerformed
 
-    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+    private void btnguardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnguardarActionPerformed
 //GUARDAR
-Connection conexion = null;
+    obtenerDatosGUI();
 
-String consulta = "INSERT INTO personas (ID_estudiante, Nombre_estudiante) VALUES (?, ?)";
-    PreparedStatement sentencia = null;
-    try {
-      sentencia = conexion.prepareStatement(consulta);
-      sentencia.setString(1, "Juan Pérez");
-      sentencia.setString(2, "1234567890");
-      sentencia.executeUpdate();
-    } catch (SQLException e) {
-      System.out.println("Error al ejecutar la consulta: " + e.getMessage());
+    if(guardar()){
+        Adicional.informar(this, "Datos guardados correctamente.", getTitle());
+        limpiarGUI();
+    }else{
+        Adicional.advertir(this,"ERROR: No se guardaron los datos.", getTitle());
     }
 
- //id_estudiante INT PRIMARY KEY,
-  //nombre_estudiante VARCHAR(50),
-  //apellido_estudiante VARCHAR(50),
-  //edad_estudiante INT,
-  //id_estado_civil INT,
-  //id_estado INT,
-  //id_documento INT,
-    
-    
-    
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton4ActionPerformed
 
-    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton5ActionPerformed
 
-    private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
+
+        // GUARDAR
+    }//GEN-LAST:event_btnguardarActionPerformed
+
+    private void btnmodificarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnmodificarActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jButton6ActionPerformed
+    }//GEN-LAST:event_btnmodificarActionPerformed
+
+    private void btnlimpiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnlimpiarActionPerformed
+
+     limpiarGUI();
+     
+        // LIMPIAR
+    }//GEN-LAST:event_btnlimpiarActionPerformed
 
     private void jTextField9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField9ActionPerformed
         // TODO add your handling code here:
@@ -654,16 +752,16 @@ String consulta = "INSERT INTO personas (ID_estudiante, Nombre_estudiante) VALUE
             }
         });
         
-        Conexion cn=new Conexion();
+        //Conexion cn=new Conexion();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JButton jButton5;
-    private javax.swing.JButton jButton6;
+    private javax.swing.JButton btnbuscar;
+    private javax.swing.JButton btneliminar;
+    private javax.swing.JButton btnguardar;
+    private javax.swing.JButton btnlimpiar;
+    private javax.swing.JButton btnmodificar;
+    private javax.swing.JButton btnsalir;
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JCheckBox jCheckBox2;
     private javax.swing.JCheckBox jCheckBox3;
@@ -698,21 +796,4 @@ String consulta = "INSERT INTO personas (ID_estudiante, Nombre_estudiante) VALUE
     private javax.swing.JTextField jTextField8;
     private javax.swing.JTextField jTextField9;
     // End of variables declaration//GEN-END:variables
-}
-
-   
-class Conexion {
-    Connection con;
-      private static final String URL = "jdbc:mysql://localhost:3306/registro_estudiantes";
-      private static final String USUARIO = "root";
-      private static final String CLAVE = "santiago**23";
-      
-    public Conexion(){
-        try{
-          Class.forName("com.mysql.cj.jdbc.Driver");
-          con = DriverManager.getConnection(URL, USUARIO, CLAVE);
-        } catch (Exception e) {
-          System.out.println("Error al conectar: " + e.getMessage());
-        }
-    }
 }
